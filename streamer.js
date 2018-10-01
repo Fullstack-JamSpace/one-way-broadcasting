@@ -3,7 +3,6 @@ import {Dropdown} from 'react-bootstrap'
 import {config} from './stream-config'
 
 class Streamer extends Component {
-
   render() {
     return (
       <div>

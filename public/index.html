@@ -2,12 +2,12 @@
 <html lang="en">
   <head>
     <title>STREAM</title>
-<!--     <script> <<< SEEMS TO BE UNECCESSARY 
+    <script>
       if(!location.hash.replace('#', '').length) {
         location.href = location.href.split('#')[0] + '#' + (Math.random() * 100).toString().replace('.', '');
         location.reload();
       }
-    </script> -->
+    </script>
     <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
@@ -47,8 +47,11 @@
 
       <script>
         // HOW TO INTEGRATE WITH FIREBASE ==> https://github.com/muaz-khan/WebRTC-Experiment/blob/master/Signaling.md
+
         const config = {
+          // OPEN SOCKET FIRES ON ComponentDidMount -- vvvvv
           openSocket: config => {
+            // console.trace('OPEN SOCKET TRACE:  ')
             const SIGNALING_SERVER = 'https://socketio-over-nodejs2.herokuapp.com:443/';
             config.channel = config.channel || location.href.replace(/\/|:|#|%|\.|\[|\]/g, '');
             const sender = Math.round(Math.random() * 999999999) + 999999999;
@@ -59,7 +62,6 @@
             const socket = io.connect(SIGNALING_SERVER + config.channel);
             socket.channel = config.channel;
             socket.on('connect', () => {
-              console.log('CONNECTING TO SOCKET')
               if(config.callback) config.callback(socket);
             });
             socket.send = message => {
@@ -71,7 +73,11 @@
             };
             socket.on('message', config.onmessage);
           },
+          //could be same component as onRemoteStream called in 'broadcast.js'
           onRemoteStream: htmlElement => {
+            //TRIGGER A SETSTATE vvvv
+            //update view with render func
+            console.trace('ON REMOTE STREAM:')
             videosContainer.appendChild(htmlElement);
             rotateInCircle(htmlElement);
           },
@@ -101,6 +107,7 @@
             document.title = 'Viewers: ' + numberOfViewers;
           },
           onReady: () => {
+            //console.trace('on ready trace')
             console.log('now you can open or join rooms');
           }
         };
@@ -111,7 +118,7 @@
           document.getElementById('setup-new-broadcast').disabled = true;
           DetectRTC.load(() => {
             captureUserMedia(() => {
-              const shared = 'video';
+              let shared = 'video';
               if(window.option == 'Only Audio') {
                 shared = 'audio';
               }
@@ -128,7 +135,7 @@
         }
 
         captureUserMedia = callback => {
-          const constraints = null;
+          let constraints = null;
           window.option = broadcastingOption ? broadcastingOption.value : '';
           if (option === 'Only Audio') {
             constraints = {
@@ -157,6 +164,7 @@
           if(option != 'Only Audio' && option != 'Screen' && DetectRTC.hasWebcam !== true) {
             alert('DetectRTC library is unable to find webcam; maybe you denied webcam access once and it is still denied or maybe webcam device is not attached to your system or another app is using same webcam.');
           }
+          //STREAM VIDEO COMPONENT renders <video> with these attributes as props:
           const htmlElement = document.createElement(option === 'Only Audio' ? 'audio' : 'video');
           htmlElement.muted = true;
           htmlElement.volume = 0;

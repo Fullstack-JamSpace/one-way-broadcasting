@@ -1,5 +1,3 @@
-# World Wide Whiteboard
-
 ## Setup
 
 ### MacOS/Linux

@@ -1,5 +1,13 @@
 import {RTCPeerConnection5} from './connection'
 
+// *** Broadcaster should be the one to call initPeer() ***
+
+// can prob lose most of this code, especially w/ peerjs library
+
+// signaling/webrtc through peerjs, everything else through firebase
+
+// if we go with peerJs, focus on understanding initPeer, and how to port over to React
+
 const broadcast = function(config) {
     var self = {
         userToken: uniqueToken()
@@ -8,7 +16,7 @@ const broadcast = function(config) {
         isbroadcaster,
         isGetNewRoom = true,
         participants = 1,
-        defaultSocket = { };
+        defaultSocket = {};
 
     function openDefaultSocket(callback) {
         defaultSocket = config.openSocket({
@@ -20,12 +28,18 @@ const broadcast = function(config) {
         });
     }
 
-    function onDefaultSocketResponse(response) {
+    function onDefaultSocketResponse(response) { //check socket.on docs to clarify where response comes from
+      //any message the socket receives, send through this
         if (response.userToken == self.userToken) return;
+
 
         if (isGetNewRoom && response.roomToken && response.broadcaster) config.onRoomFound(response);
 
-        if (response.userToken && response.joinUser == self.userToken && response.participant && channels.indexOf(response.userToken) == -1) {
+//is there a user token, is the joinUser = to userToken, is there a participant, and am i part of the list of connected users 
+        if (response.userToken && response.joinUser == self.userToken && response.participant
+            && channels.indexOf(response.userToken) == -1) {
+
+//broadcaster calls opensubsocket w/ isofferer true, which eventually initializes peer (initPeer())
             channels += response.userToken + '--';
             openSubSocket({
                 isofferer: true,
@@ -35,6 +49,7 @@ const broadcast = function(config) {
         }
     }
 
+//need to understand relationship b/w initPeer and openSubSocket
     function openSubSocket(_config) {
         if (!_config.channel) return;
         var socketConfig = {
@@ -106,6 +121,7 @@ const broadcast = function(config) {
         };
 
         function initPeer(offerSDP) {
+
             if (!offerSDP) {
                 peerConfig.onOfferSDP = sendsdp;
             } else {
@@ -212,6 +228,7 @@ const broadcast = function(config) {
             broadcaster: self.userToken,
             isAudio: self.isAudio
         });
+        //if new client connects, they will receive broadcast at least w/in 3 seconds
         setTimeout(startBroadcasting, 3000);
     }
 
@@ -223,6 +240,7 @@ const broadcast = function(config) {
     }
 
     openDefaultSocket(config.onReady || function() {});
+
     return {
         createRoom: function(_config) {
             self.roomName = _config.roomName || 'Anonymous';

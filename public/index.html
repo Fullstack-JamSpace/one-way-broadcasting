@@ -2,12 +2,12 @@
 <html lang="en">
   <head>
     <title>STREAM</title>
-    <script>
+<!--     <script> <<< SEEMS TO BE UNECCESSARY 
       if(!location.hash.replace('#', '').length) {
         location.href = location.href.split('#')[0] + '#' + (Math.random() * 100).toString().replace('.', '');
         location.reload();
       }
-    </script>
+    </script> -->
     <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
@@ -46,6 +46,7 @@
       </section>
 
       <script>
+        // HOW TO INTEGRATE WITH FIREBASE ==> https://github.com/muaz-khan/WebRTC-Experiment/blob/master/Signaling.md
         const config = {
           openSocket: config => {
             const SIGNALING_SERVER = 'https://socketio-over-nodejs2.herokuapp.com:443/';
@@ -97,19 +98,19 @@
             };
           },
           onNewParticipant: numberOfViewers => {
-              document.title = 'Viewers: ' + numberOfViewers;
+            document.title = 'Viewers: ' + numberOfViewers;
           },
           onReady: () => {
-              console.log('now you can open or join rooms');
+            console.log('now you can open or join rooms');
           }
         };
 
         setupNewBroadcastButtonClickHandler = () => {
-          console.log('TEST')
+          console.log('SETTING UP NEW BROADCAST')
           document.getElementById('broadcast-name').disabled = true;
           document.getElementById('setup-new-broadcast').disabled = true;
-          DetectRTC.load(function() {
-            captureUserMedia(function() {
+          DetectRTC.load(() => {
+            captureUserMedia(() => {
               const shared = 'video';
               if(window.option == 'Only Audio') {
                 shared = 'audio';
@@ -118,7 +119,7 @@
                 shared = 'screen';
               }
               broadcastUI.createRoom({
-                roomName: (document.getElementById('broadcast-name') || { }).value || 'Anonymous',
+                roomName: (document.getElementById('broadcast-name') || {}).value || 'Anonymous',
                 isAudio: shared === 'audio'
               });
             });
@@ -141,7 +142,7 @@
           if(option === 'Screen') {
             const video_constraints = {
               mandatory: {
-                  chromeMediaSource: 'screen'
+                chromeMediaSource: 'screen'
               },
               optional: []
             };
@@ -186,10 +187,11 @@
               } else alert('unable to get access to your webcam');
             }
           };
-          if (constraints) mediaConfig.constraints = constraints;
+          if(constraints) mediaConfig.constraints = constraints;
           getUserMedia(mediaConfig);
         }
         const broadcastUI = broadcast(config);
+        
         /* UI specific */
         const videosContainer = document.getElementById('videos-container') || document.body;
         const setupNewBroadcast = document.getElementById('setup-new-broadcast');
